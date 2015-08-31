@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 __author__ = 'ryu_cz'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 from HTMLParser import HTMLParser
 import re
@@ -31,6 +31,10 @@ _baseFontName='Verdana'
 _baseFontNameB = tt2ps(_baseFontName,1,0)
 _baseFontNameI = tt2ps(_baseFontName,0,1)
 _baseFontNameBI = tt2ps(_baseFontName,1,1)
+
+#===============================================================================
+# Define style for PDF
+#===============================================================================
 
 def getMenuStyleSheet():
     """Returns a stylesheet object"""
@@ -142,10 +146,15 @@ def getMenuStyleSheet():
 styleSheet = getMenuStyleSheet()
 
 
+#===============================================================================
+# Web data parser
+#===============================================================================
+
+#interfaces
 class DataProvider():
     def getData(self):
         '''
-        Retuns list of one row data
+        Returns list of one row data
         '''
         return []
 
@@ -159,7 +168,7 @@ class StyleProvider():
         '''
         return []
 
-
+#data containers
 class Food(StyleProvider, DataProvider):
     '''
     Represents one menu item with price
@@ -240,7 +249,7 @@ class Day(StyleProvider, DataProvider):
     
     def string(self):
         fl = [f.string() for f in self.foodList]
-        return unicode(u'%s:\nPolévka: %s%s'%(self.name, self.soup, '\n'.join(fl)))
+        return unicode(u'%s:\nPolévka: %s\n%s'%(self.name, self.soup, '\n'.join(fl)))
     
 
 # create a subclass and override the handler methods
@@ -323,12 +332,21 @@ class Menu(DataProvider):
         elements.append(self._prepareTitle())
         for i in range(len(self.days)):
             elements.append(Spacer(width=sum(self.tableColWidths), 
-                                height=0.4*cm))
-            elements.append(Table(self.days[i].getData(),
-                               style=self.days[i].getStyle(),
-                               colWidths=self.tableColWidths
-                               )
-                         )
+                                   height=0.4*cm))
+#             print "day '%s': \n\t%s\n\t%s '%s'"%(self.days[i].name, self.days[i].soup, self.days[i].foodList[0].description,  self.days[i].foodList[0].price)
+            dayMenu = self.days[i].getData()
+            if max((len(food) for food in dayMenu))>1:
+                elements.append(Table(self.days[i].getData(),
+                                      style=self.days[i].getStyle(),
+                                      colWidths=self.tableColWidths
+                                      )
+                             )
+            else:
+                elements.append(Table(self.days[i].getData(),
+                                      style=self.days[i].getStyle(),
+                                      colWidths=sum(self.tableColWidths)
+                                      )
+                             )
         return elements
     
     def string(self):
