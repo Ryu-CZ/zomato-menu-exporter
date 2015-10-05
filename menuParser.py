@@ -14,12 +14,15 @@ import sys
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 
+from reportlab import rl_config
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, CellStyle
 from reportlab.lib.styles import *#getSampleStyleSheet
 from reportlab.lib.units import inch, cm
 from reportlab.platypus.flowables import Spacer
+from reportlab.pdfbase import pdfdoc
+pdfdoc.PDF_VERSION_DEFAULT
 
 from reportlab.lib.colors import white, black
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
@@ -218,13 +221,13 @@ class Day(StyleProvider, DataProvider):
         @param tag: tag of element
         '''
         if tag=='tmi-group-name':
-            self.name = value
+            self.name = re.sub(r'[\( ]+[a-zA-Z ]*[\) ]+', '', value)
         elif tag=='tmi-name':
             if self.soup is None:
                 self.soup = value
             else:
                 self.addFood(description=value)
-        elif tag=='tmi-price' and len(self.foodList)>0:
+        elif 'tmi-price' in tag and len(self.foodList)>0:
             self.foodList[-1].price = value
         else:
             self.padding += value
@@ -296,7 +299,8 @@ class Menu(DataProvider):
         self.days = None
         self.title = title
         self.pageSize = A4
-        self.tableColWidths = (17.5*cm, 1.5*cm)
+        printWidth = 21*cm - 2*inch
+        self.tableColWidths = (0.92*printWidth, 0.08*printWidth)
         
     def gatherSrc(self, URL):
         # get menu pages text
@@ -331,6 +335,8 @@ class Menu(DataProvider):
         elements = []
         elements.append(self._prepareTitle())
         for i in range(len(self.days)):
+#             if i > 4:
+#                 break;
             elements.append(Spacer(width=sum(self.tableColWidths), 
                                    height=0.4*cm))
 #             print "day '%s': \n\t%s\n\t%s '%s'"%(self.days[i].name, self.days[i].soup, self.days[i].foodList[0].description,  self.days[i].foodList[0].price)
@@ -387,10 +393,10 @@ def toPDF(menu, outFile):
     print("... Creating PDF %s"%outFile)
     doc = SimpleDocTemplate(outFile, 
                             pagesize=menu.pageSize, 
-                            leftMargin=inch*0.25,
-                            rightMargin=inch*0.25, 
-                            bottomMargin=inch*0.25, 
-                            topMargin=inch*0.25)
+                            leftMargin=inch,
+                            rightMargin=inch, 
+                            bottomMargin=0.25*inch, 
+                            topMargin=0.25*inch)
     doc.build(menu.getData())
     return
 
@@ -404,4 +410,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    
