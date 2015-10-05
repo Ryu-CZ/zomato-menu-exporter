@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 __author__ = 'ryu_cz'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 from HTMLParser import HTMLParser
 import re

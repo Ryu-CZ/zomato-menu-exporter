@@ -2,7 +2,7 @@
 This python script exports online menu of your favorite restaurant on www.zomato.com into PDF.
 
 ### Version
-1.0.1
+1.0.2
 
 ### Installation
 ```{r, engine='bash'}
